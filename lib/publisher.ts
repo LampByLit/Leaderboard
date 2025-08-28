@@ -1,5 +1,6 @@
 import { BookMetadata, OutputData } from './types';
 import { readMetadata, writeOutput } from './data-manager';
+import { addDailySnapshot } from './history-manager';
 
 /**
  * Publisher module for processing metadata and creating sorted output
@@ -84,6 +85,9 @@ export async function publishLeaderboard(): Promise<void> {
     
     // Write to output.json
     writeOutput(output);
+    
+    // Save daily snapshot for historical tracking
+    addDailySnapshot(metadata);
     
     // Display results
     console.log('\n📊 Publisher Results:');

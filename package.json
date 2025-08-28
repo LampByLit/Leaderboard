@@ -13,7 +13,8 @@
     "scheduler": "tsx scripts/scheduler.ts",
     "cycle:now": "tsx lib/cycle.ts",
     "start:prod": "tsx scripts/start-production.ts",
-    "build:clean": "rm -rf .next && npm run build"
+    "build:clean": "rm -rf .next && npm run build",
+    "test:history": "tsx scripts/test-history.ts"
   },
   "dependencies": {
     "next": "15.4.3",

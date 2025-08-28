@@ -36,6 +36,30 @@ export function Leaderboard({ data }: LeaderboardProps) {
     }
   };
 
+  const handleTestCycle = async () => {
+    if (isRunningCycle) return;
+    
+    setIsRunningCycle(true);
+    try {
+      const response = await fetch('/api/test-cycle', {
+        method: 'POST',
+      });
+      
+      if (response.ok) {
+        // Reload the page after a short delay to show updated data
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
+      } else {
+        console.error('Failed to run test cycle');
+      }
+    } catch (error) {
+      console.error('Error running test cycle:', error);
+    } finally {
+      setIsRunningCycle(false);
+    }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       {/* Header */}
@@ -75,6 +99,24 @@ export function Leaderboard({ data }: LeaderboardProps) {
           </a>
           .
         </p>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="flex justify-center space-x-4 mb-8">
+        <button
+          onClick={handleRunCycle}
+          disabled={isRunningCycle}
+          className="material-button disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isRunningCycle ? 'Running...' : 'Run Cycle'}
+        </button>
+        <button
+          onClick={handleTestCycle}
+          disabled={isRunningCycle}
+          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isRunningCycle ? 'Running...' : 'Test Cycle'}
+        </button>
       </div>
 
       {/* Stats Cards */}
