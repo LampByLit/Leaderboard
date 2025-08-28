@@ -8,7 +8,7 @@
 import fs from 'fs';
 import path from 'path';
 import { scrapeBooks } from '../lib/scraper';
-import { writeMetadata } from '../lib/data-manager';
+import { writeDataWithHistory } from '../lib/data-manager';
 import { HARDCODED_URLS } from '../lib/config';
 
 /**
@@ -32,8 +32,8 @@ async function main() {
     // Scrape all books
     const scrapedBooks = await scrapeBooks(urls);
     
-    // Write results to metadata.json
-    writeMetadata(scrapedBooks);
+    // Write results to metadata.json and historical.json
+    writeDataWithHistory(scrapedBooks);
     
     // Summary
     const successful = scrapedBooks.filter(book => !book.error).length;
@@ -42,7 +42,7 @@ async function main() {
     console.log('\n📊 Scraping Summary:');
     console.log(`✅ Successfully scraped: ${successful} books`);
     console.log(`❌ Failed to scrape: ${failed} books`);
-    console.log(`📁 Results saved to: data/metadata.json`);
+    console.log(`📁 Results saved to: data/metadata.json and data/historical.json`);
     
     if (failed > 0) {
       console.log('\n⚠️  Failed books:');

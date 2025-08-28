@@ -2,10 +2,10 @@
 
 import { useState } from 'react';
 import { BookCard } from './book-card';
-import { OutputData } from '@/lib/types';
+import { OutputDataWithHistory } from '@/lib/types';
 
 interface LeaderboardProps {
-  data: OutputData;
+  data: OutputDataWithHistory;
 }
 
 export function Leaderboard({ data }: LeaderboardProps) {
@@ -36,29 +36,9 @@ export function Leaderboard({ data }: LeaderboardProps) {
     }
   };
 
-  const handleTestCycle = async () => {
-    if (isRunningCycle) return;
-    
-    setIsRunningCycle(true);
-    try {
-      const response = await fetch('/api/test-cycle', {
-        method: 'POST',
-      });
-      
-      if (response.ok) {
-        // Reload the page after a short delay to show updated data
-        setTimeout(() => {
-          window.location.reload();
-        }, 2000);
-      } else {
-        console.error('Failed to run test cycle');
-      }
-    } catch (error) {
-      console.error('Error running test cycle:', error);
-    } finally {
-      setIsRunningCycle(false);
-    }
-  };
+  // Calculate historical data stats
+  const booksWithHistory = books.filter(book => book.history && book.history.length > 1);
+  const totalDataPoints = books.reduce((sum, book) => sum + book.history.length, 0);
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -101,26 +81,8 @@ export function Leaderboard({ data }: LeaderboardProps) {
         </p>
       </div>
 
-      {/* Action Buttons */}
-      <div className="flex justify-center space-x-4 mb-8">
-        <button
-          onClick={handleRunCycle}
-          disabled={isRunningCycle}
-          className="material-button disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isRunningCycle ? 'Running...' : 'Run Cycle'}
-        </button>
-        <button
-          onClick={handleTestCycle}
-          disabled={isRunningCycle}
-          className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isRunningCycle ? 'Running...' : 'Test Cycle'}
-        </button>
-      </div>
-
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
         <div className="material-card p-4">
           <div className="flex items-center">
             <div className="flex-shrink-0">
@@ -166,6 +128,20 @@ export function Leaderboard({ data }: LeaderboardProps) {
         <div className="material-card p-4">
           <div className="flex items-center">
             <div className="flex-shrink-0">
+              <div className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center">
+                <span className="text-purple-600 font-bold text-sm">📊</span>
+              </div>
+            </div>
+            <div className="ml-3">
+              <p className="text-sm font-medium text-gray-500">With History</p>
+              <p className="text-2xl font-bold text-gray-900">{booksWithHistory.length}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="material-card p-4">
+          <div className="flex items-center">
+            <div className="flex-shrink-0">
               <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center">
                 <span className="text-blue-600 font-bold text-sm">🕒</span>
               </div>
@@ -178,6 +154,20 @@ export function Leaderboard({ data }: LeaderboardProps) {
             </div>
           </div>
         </div>
+      </div>
+
+      {/* Manual Cycle Button */}
+      <div className="mb-8 text-center">
+        <button
+          onClick={handleRunCycle}
+          disabled={isRunningCycle}
+          className="material-button disabled:opacity-50 disabled:cursor-not-allowed"
+        >
+          {isRunningCycle ? '🔄 Running Cycle...' : '🔄 Run Manual Cycle'}
+        </button>
+        <p className="text-sm text-gray-500 mt-2">
+          Manually trigger scraping and publishing cycle
+        </p>
       </div>
 
       {/* Books Grid */}

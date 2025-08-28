@@ -5,16 +5,16 @@
  * Processes metadata.json and generates sorted output.json
  */
 
-import { publishLeaderboard } from '../lib/publisher';
+import { publishLeaderboardWithHistory } from '../lib/publisher';
 
 /**
  * Main publishing function
  */
 async function main() {
-  console.log('🚀 Starting Amazon book publisher...\n');
+  console.log('🚀 Starting Amazon book publisher with historical data...\n');
   
   try {
-    await publishLeaderboard();
+    await publishLeaderboardWithHistory();
   } catch (error) {
     console.error('💥 Fatal error during publishing:', error);
     process.exit(1);

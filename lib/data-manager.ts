@@ -1,6 +1,6 @@
 import fs from 'fs';
 import path from 'path';
-import { BookMetadata, OutputData } from './types';
+import { BookMetadata, OutputData, BookWithHistory, OutputDataWithHistory, HistoricalDataPoint } from './types';
 
 /**
  * Data manager for handling JSON file operations
@@ -39,6 +39,75 @@ export function readMetadata(): BookMetadata[] {
 }
 
 /**
+ * Reads historical data from the historical.json file
+ */
+export function readHistoricalData(): BookWithHistory[] {
+  ensureDataDirectory();
+  const historicalPath = path.join(DATA_DIR, 'historical.json');
+  
+  try {
+    if (!fs.existsSync(historicalPath)) {
+      return [];
+    }
+    
+    const data = fs.readFileSync(historicalPath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    console.error('Error reading historical data:', error);
+    return [];
+  }
+}
+
+/**
+ * Merges new book data with existing historical data
+ */
+function mergeWithHistory(newBooks: BookMetadata[]): BookWithHistory[] {
+  const existingHistory = readHistoricalData();
+  const mergedBooks: BookWithHistory[] = [];
+  
+  for (const newBook of newBooks) {
+    // Find existing book in history
+    const existingBook = existingHistory.find(book => book.url === newBook.url);
+    
+    if (existingBook) {
+      // Add new data point to existing history
+      const newDataPoint: HistoricalDataPoint = {
+        date: newBook.scrapedAt,
+        bsr: newBook.bestSellersRank
+      };
+      
+      const updatedHistory = [...existingBook.history, newDataPoint];
+      
+      // Keep only last 30 days of data to prevent file bloat
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      
+      const filteredHistory = updatedHistory.filter(point => 
+        new Date(point.date) >= thirtyDaysAgo
+      );
+      
+      mergedBooks.push({
+        ...newBook,
+        history: filteredHistory
+      });
+    } else {
+      // New book, create initial history
+      const initialDataPoint: HistoricalDataPoint = {
+        date: newBook.scrapedAt,
+        bsr: newBook.bestSellersRank
+      };
+      
+      mergedBooks.push({
+        ...newBook,
+        history: [initialDataPoint]
+      });
+    }
+  }
+  
+  return mergedBooks;
+}
+
+/**
  * Writes metadata to the metadata.json file with atomic operation
  */
 export function writeMetadata(metadata: BookMetadata[]): void {
@@ -64,6 +133,43 @@ export function writeMetadata(metadata: BookMetadata[]): void {
     
     throw error;
   }
+}
+
+/**
+ * Writes historical data to the historical.json file with atomic operation
+ */
+export function writeHistoricalData(booksWithHistory: BookWithHistory[]): void {
+  ensureDataDirectory();
+  const historicalPath = path.join(DATA_DIR, 'historical.json');
+  const tempPath = `${historicalPath}.tmp`;
+  
+  try {
+    // Write to temporary file first
+    fs.writeFileSync(tempPath, JSON.stringify(booksWithHistory, null, 2));
+    
+    // Atomic move operation
+    fs.renameSync(tempPath, historicalPath);
+    
+    console.log(`Successfully wrote historical data for ${booksWithHistory.length} books`);
+  } catch (error) {
+    console.error('Error writing historical data:', error);
+    
+    // Clean up temp file if it exists
+    if (fs.existsSync(tempPath)) {
+      fs.unlinkSync(tempPath);
+    }
+    
+    throw error;
+  }
+}
+
+/**
+ * Writes both metadata and historical data atomically
+ */
+export function writeDataWithHistory(metadata: BookMetadata[]): void {
+  const booksWithHistory = mergeWithHistory(metadata);
+  writeMetadata(metadata);
+  writeHistoricalData(booksWithHistory);
 }
 
 /**
@@ -96,6 +202,33 @@ export function readOutput(): OutputData {
       failedBooks: 0
     };
   }
+}
+
+/**
+ * Reads output data with history from the historical.json file
+ */
+export function readOutputWithHistory(): OutputDataWithHistory {
+  const booksWithHistory = readHistoricalData();
+  
+  // Sort books by current BSR
+  const sortedBooks = booksWithHistory.sort((a, b) => {
+    if (a.bestSellersRank === 0 && b.bestSellersRank === 0) return 0;
+    if (a.bestSellersRank === 0) return 1;
+    if (b.bestSellersRank === 0) return -1;
+    return a.bestSellersRank - b.bestSellersRank;
+  });
+  
+  const totalBooks = sortedBooks.length;
+  const failedBooks = sortedBooks.filter(book => book.error).length;
+  const validBooks = totalBooks - failedBooks;
+  
+  return {
+    books: sortedBooks,
+    generatedAt: new Date().toISOString(),
+    totalBooks,
+    validBooks,
+    failedBooks
+  };
 }
 
 /**

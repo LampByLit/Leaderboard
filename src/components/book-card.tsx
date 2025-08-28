@@ -1,8 +1,8 @@
 import Image from 'next/image';
-import { BookMetadata } from '@/lib/types';
+import { BookWithHistory } from '@/lib/types';
 
 interface BookCardProps {
-  book: BookMetadata;
+  book: BookWithHistory;
   rank: number;
 }
 
@@ -28,6 +28,25 @@ export function BookCard({ book, rank }: BookCardProps) {
     }
     return author;
   };
+
+  // Calculate BSR trend
+  const getBSRTrend = () => {
+    if (book.history.length < 2) return null;
+    
+    const sortedHistory = [...book.history].sort((a, b) => 
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+    
+    const oldest = sortedHistory[0].bsr;
+    const newest = sortedHistory[sortedHistory.length - 1].bsr;
+    
+    if (newest < oldest) return 'up'; // Better performance (lower BSR)
+    if (newest > oldest) return 'down'; // Worse performance (higher BSR)
+    return 'stable';
+  };
+
+  const bsrTrend = getBSRTrend();
+  const historyCount = book.history.length;
 
   return (
     <div className="material-card p-6 hover:shadow-material-3 transition-all duration-200">
@@ -79,8 +98,33 @@ export function BookCard({ book, rank }: BookCardProps) {
               <span className="text-lg font-bold text-primary-600">
                 {formatBSR(book.bestSellersRank)}
               </span>
+              {bsrTrend && (
+                <span className={`text-xs px-2 py-1 rounded-full ${
+                  bsrTrend === 'up' 
+                    ? 'bg-green-100 text-green-800' 
+                    : bsrTrend === 'down'
+                    ? 'bg-red-100 text-red-800'
+                    : 'bg-gray-100 text-gray-800'
+                }`}>
+                  {bsrTrend === 'up' ? '↗' : bsrTrend === 'down' ? '↘' : '→'}
+                </span>
+              )}
             </div>
           </div>
+          
+          {/* Historical Data Info */}
+          {historyCount > 0 && (
+            <div className="mt-2 flex items-center space-x-2">
+              <span className="text-xs text-gray-500">
+                📊 {historyCount} data point{historyCount !== 1 ? 's' : ''}
+              </span>
+              {historyCount > 1 && (
+                <span className="text-xs text-gray-400">
+                  • {new Date(book.history[0].date).toLocaleDateString()} - {new Date(book.history[book.history.length - 1].date).toLocaleDateString()}
+                </span>
+              )}
+            </div>
+          )}
           
           {/* Validation Badge */}
           <div className="mt-3">

@@ -1,6 +1,6 @@
 import { scrapeBooks } from './scraper';
 import { publishLeaderboard } from './publisher';
-import { writeMetadata } from './data-manager';
+import { writeDataWithHistory } from './data-manager';
 import { HARDCODED_URLS } from './config';
 
 /**
@@ -17,7 +17,7 @@ async function runScraperWithRetry(maxRetries = 3): Promise<boolean> {
       console.log(`🔄 Scraping attempt ${attempt}/${maxRetries}...`);
       
       const scrapedBooks = await scrapeBooks(HARDCODED_URLS);
-      writeMetadata(scrapedBooks);
+      writeDataWithHistory(scrapedBooks);
       
       const successful = scrapedBooks.filter(book => !book.error).length;
       const failed = scrapedBooks.filter(book => book.error).length;

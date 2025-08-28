@@ -13,14 +13,14 @@
     "scheduler": "tsx scripts/scheduler.ts",
     "cycle:now": "tsx lib/cycle.ts",
     "start:prod": "tsx scripts/start-production.ts",
-    "build:clean": "rm -rf .next && npm run build",
-    "test:history": "tsx scripts/test-history.ts"
+    "build:clean": "rm -rf .next && npm run build"
   },
   "dependencies": {
     "next": "15.4.3",
     "node-cron": "^4.2.1",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "recharts": "^3.1.2"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
