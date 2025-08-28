@@ -33,7 +33,7 @@ export const HARDCODED_URLS = [
   'https://www.amazon.com/dp/B0FMTPXNPM',
   'https://www.amazon.com/Give-Up-Ghost-P-C-M-Christ/dp/B0DCWJL387',
   'https://www.amazon.com/Gothic-Violence-Mike-Ma/dp/B096Z7J6C1',
-  'https://www.amazon.com/Xenos-Depths-Michael-D-Cinder/dp/B09ZCYBGY7',
+  'https://www.amazon.com/Crimson-Veil-John-Slaughter/dp/B0DSBN91CH',
   'https://www.amazon.com/Orators-Pseudo-Bulkington/dp/B0BF2XBBLX',
   // Add more URLs here as needed
 ];
