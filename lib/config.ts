@@ -32,6 +32,9 @@ export const HARDCODED_URLS = [
   'https://www.amazon.com/Egregore-Gothic-Horror-Spencer-Weedman/dp/B0B5KVDCR6',
   'https://www.amazon.com/dp/B0FMTPXNPM',
   'https://www.amazon.com/Give-Up-Ghost-P-C-M-Christ/dp/B0DCWJL387',
+  'https://www.amazon.com/Gothic-Violence-Mike-Ma/dp/B096Z7J6C1',
+  'https://www.amazon.com/LAcad%C3%A9mie-R-C-Waldun/dp/0648963209',
+  'https://www.amazon.com/ESKETIT-quindelin-_/dp/B0863V2KCT',
   // Add more URLs here as needed
 ];
 
