@@ -156,7 +156,8 @@ export function Leaderboard({ data }: LeaderboardProps) {
         </div>
       </div>
 
-      {/* Manual Cycle Button */}
+      {/* Manual Cycle Button - Hidden for now */}
+      {/* 
       <div className="mb-8 text-center">
         <button
           onClick={handleRunCycle}
@@ -169,6 +170,7 @@ export function Leaderboard({ data }: LeaderboardProps) {
           Manually trigger scraping and publishing cycle
         </p>
       </div>
+      */}
 
       {/* Books Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">

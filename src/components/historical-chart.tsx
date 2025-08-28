@@ -158,21 +158,17 @@ export function HistoricalChart({ books }: HistoricalChartProps) {
           <span className="text-sm font-medium text-gray-700 block mb-2">Select Books to Display:</span>
           <div className="flex flex-wrap gap-2">
             {booksWithHistory.map((book, index) => (
-              <button
-                key={book.title}
-                onClick={() => handleBookToggle(book.title)}
-                className={`px-3 py-1 text-sm rounded-md transition-colors flex items-center space-x-2 ${
-                  displayBooks.some(b => b.title === book.title)
-                    ? 'bg-primary-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-              >
-                <div 
-                  className="w-3 h-3 rounded-full" 
-                  style={{ backgroundColor: colors[index % colors.length] }}
-                />
-                <span className="truncate max-w-32">{book.title}</span>
-              </button>
+                             <button
+                 key={book.title}
+                 onClick={() => handleBookToggle(book.title)}
+                 className={`px-3 py-1 text-sm rounded-md transition-colors ${
+                   displayBooks.some(b => b.title === book.title)
+                     ? 'bg-primary-600 text-white'
+                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                 }`}
+               >
+                 <span className="truncate max-w-32">{book.title}</span>
+               </button>
             ))}
           </div>
         </div>
@@ -194,7 +190,7 @@ export function HistoricalChart({ books }: HistoricalChartProps) {
                fontSize={12}
                tickFormatter={formatBSR}
                domain={['dataMin', 'dataMax']}
-               label={{ value: 'Performance Score (Higher = Better BSR)', angle: -90, position: 'insideLeft' }}
+               label={{ value: 'BSR', angle: -90, position: 'insideLeft' }}
              />
             <Tooltip 
               formatter={(value: number) => [formatBSR(value), 'BSR']}
