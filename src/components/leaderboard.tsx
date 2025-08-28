@@ -66,7 +66,7 @@ export function Leaderboard({ data }: LeaderboardProps) {
           </a>
           . This leaderboard will automatically update once daily. A stable version of this tool can be downloaded from{' '}
           <a 
-            href="https://github.com/LampByLit/leaderboard2" 
+            href="https://github.com/LampByLit/Leaderboard" 
             target="_blank" 
             rel="noopener noreferrer"
             className="text-primary-600 hover:text-primary-700 underline transition-colors duration-200"
