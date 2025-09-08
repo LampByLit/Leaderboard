@@ -34,7 +34,7 @@ export const HARDCODED_URLS = [
   'https://www.amazon.com/Give-Up-Ghost-P-C-M-Christ/dp/B0DCWJL387',
   'https://www.amazon.com/Gothic-Violence-Mike-Ma/dp/B096Z7J6C1',
   'https://www.amazon.com/Crimson-Veil-John-Slaughter/dp/B0DSBQGRCP',
-  'https://www.amazon.com/Orators-Pseudo-Bulkington/dp/B0BF2XBBLX',
+  'https://www.amazon.com/Automaton-T-R-Hudson/dp/B09PM84KV3',
   'https://www.amazon.com/Scenebux-Cairo-Smith/dp/B0FHQX81VH',
   'https://www.amazon.com/Women-Jack-Napier/dp/B0FKZLKCPY',
   'https://www.amazon.com/Chicken-World-K-R-Hartley/dp/B0CHGBLHXH',
