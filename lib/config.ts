@@ -37,7 +37,7 @@ export const HARDCODED_URLS = [
   'https://www.amazon.com/Automaton-T-R-Hudson/dp/B09PM84KV3',
   'https://www.amazon.com/Scenebux-Cairo-Smith/dp/B0FHQX81VH',
   'https://www.amazon.com/Women-Jack-Napier/dp/B0FKZLKCPY',
-  'https://www.amazon.com.au/dp/0645776890',
+  'https://www.amazon.com/dp/0645776890',
   'https://www.amazon.com/dp/B0DFZQTBKD',
   'https://www.amazon.com/Emperor-Mountain-Other-Weird-Tales/dp/B0CMVCPFTD',
   'https://www.amazon.com/Chicken-World-K-R-Hartley/dp/B0CHGBLHXH',
