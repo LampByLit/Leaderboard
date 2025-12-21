@@ -13,14 +13,17 @@ const USER_AGENTS = [
   'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
   'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0',
   'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Safari/605.1.15',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0'
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1'
 ];
 
 /**
- * Generates a random delay between 3-10 seconds for rate limiting
+ * Generates a random delay between 8-15 seconds for rate limiting
  */
 function getRandomDelay(): number {
-  return Math.floor(Math.random() * (10000 - 3000 + 1)) + 3000;
+  return Math.floor(Math.random() * (15000 - 8000 + 1)) + 8000;
 }
 
 /**
@@ -322,8 +325,8 @@ function extractBestSellersRank(html: string): number | null {
  * Scrapes a single Amazon book URL with retry logic
  */
 export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingResult> {
-  const MAX_RETRIES = 3; // Increase max retries
-  const BASE_DELAY = 3000; // 3 seconds base delay
+  const MAX_RETRIES = 3;
+  const BASE_DELAY = 5000; // 5 seconds base delay
   
   // Validate the URL first
   if (!isValidAmazonBookUrl(url)) {
@@ -335,11 +338,18 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
 
   try {
     console.log(`Scraping: ${url}${retryCount > 0 ? ` (retry ${retryCount})` : ''}`);
-    
+
+    // Add initial delay to look more human-like (only on first attempt)
+    if (retryCount === 0) {
+      const initialDelay = Math.random() * 3000 + 2000; // 2-5 seconds
+      await new Promise(resolve => setTimeout(resolve, initialDelay));
+    }
+
     // Make the HTTP request with proper headers
+    const userAgent = getRandomUserAgent();
     const response = await fetch(url, {
       headers: {
-        'User-Agent': getRandomUserAgent(),
+        'User-Agent': userAgent,
         'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
         'Accept-Language': 'en-US,en;q=0.9',
         'Accept-Encoding': 'gzip, deflate, br',
@@ -351,6 +361,16 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
         'Sec-Fetch-User': '?1',
         'Cache-Control': 'max-age=0',
         'DNT': '1',
+        'Sec-Ch-Ua': userAgent.includes('Chrome') ? '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"'
+          : userAgent.includes('Firefox') ? '"Not_A Brand";v="99"'
+          : userAgent.includes('Safari') ? '"Safari";v="17.2"'
+          : '"Not_A Brand";v="99"',
+        'Sec-Ch-Ua-Mobile': userAgent.includes('Mobile') ? '?1' : '?0',
+        'Sec-Ch-Ua-Platform': userAgent.includes('Macintosh') ? '"macOS"'
+          : userAgent.includes('iPhone') ? '"iOS"'
+          : userAgent.includes('Linux') ? '"Linux"'
+          : '"Windows"',
+        'Referer': 'https://www.amazon.com/',
       }
     });
 
