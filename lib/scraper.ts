@@ -8,10 +8,12 @@ import { BookMetadata, ScrapingResult } from './types';
 
 // User agents for rotation to avoid being flagged as a bot
 const USER_AGENTS = [
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/119.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0',
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Safari/605.1.15',
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0'
 ];
 
 /**
@@ -320,8 +322,8 @@ function extractBestSellersRank(html: string): number | null {
  * Scrapes a single Amazon book URL with retry logic
  */
 export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingResult> {
-  const MAX_RETRIES = 2;
-  const BASE_DELAY = 2000; // 2 seconds
+  const MAX_RETRIES = 3; // Increase max retries
+  const BASE_DELAY = 3000; // 3 seconds base delay
   
   // Validate the URL first
   if (!isValidAmazonBookUrl(url)) {
@@ -338,11 +340,17 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
     const response = await fetch(url, {
       headers: {
         'User-Agent': getRandomUserAgent(),
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-        'Accept-Language': 'en-US,en;q=0.5',
-        'Accept-Encoding': 'gzip, deflate',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+        'Accept-Language': 'en-US,en;q=0.9',
+        'Accept-Encoding': 'gzip, deflate, br',
         'Connection': 'keep-alive',
         'Upgrade-Insecure-Requests': '1',
+        'Sec-Fetch-Dest': 'document',
+        'Sec-Fetch-Mode': 'navigate',
+        'Sec-Fetch-Site': 'none',
+        'Sec-Fetch-User': '?1',
+        'Cache-Control': 'max-age=0',
+        'DNT': '1',
       }
     });
 
@@ -379,8 +387,10 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
     if (!hasAnyData) {
       // Retry logic for failed scrapes
       if (retryCount < MAX_RETRIES) {
-        const delay = BASE_DELAY * Math.pow(2, retryCount); // Exponential backoff
-        console.log(`No data found, retrying in ${delay}ms...`);
+        const baseDelay = BASE_DELAY * Math.pow(2, retryCount); // Exponential backoff
+        const jitter = Math.random() * 2000; // Add up to 2 seconds of randomness
+        const delay = baseDelay + jitter;
+        console.log(`No data found, retrying in ${Math.round(delay)}ms...`);
         await new Promise(resolve => setTimeout(resolve, delay));
         return scrapeBook(url, retryCount + 1);
       }
