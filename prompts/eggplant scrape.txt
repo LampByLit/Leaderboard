@@ -1,0 +1,58 @@
+Here is the first example of an amazon url (similar to one the scraper might find in the input file): https://www.amazon.com/Eggplant-Ogden-Nesmer/dp/B09MJBNL7X
+We will be examining the page source of this url: 
+
+now i will show you how to find the following important metadata by scraping the page source, without ever having to render the page visually, use any scraper frameworks, or overload amazon's servers:
+- title
+- author
+- paperback
+- cover art url
+- bsr
+
+remeber that after all of this metadata is scraped, it should be saved in the metadata json file, in proper format. 
+
+First let's examine how to find the title. 
+When we open this URL, we immediately see that both the book title and the author name are in the title of the page.
+
+In the following code, we find the book's title:
+<span id="productTitle" class="a-size-large celwidget" data-csa-c-id="4jucoo-k8eeiz-crq13m-5bxk44" data-cel-widget="productTitle">  Eggplant </span>
+Notice how it is accompanied by 'productTitle'? this is an important association.
+
+Now let's find the book's author. In the following code, we see the book's author:
+<a class="a-link-normal" href="/Ogden-Nesmer/e/B0BPTHZFBC/ref=dp_byline_cont_book_1">Ogden Nesmer</a>
+Very closely in the code, we have this:
+<span class="a-color-secondary">(Author)</span>
+Notice the use of '(Author)' in proximity to the correct author name. 
+
+Now let's confirm whether or not this link is for a paperback. The following code can be found between the Title and the author:
+<span id="productSubtitle" class="a-size-medium a-color-secondary celwidget" data-csa-c-id="ipw6po-7jnouu-88oknh-lau2cr" data-cel-widget="productSubtitle">  Paperback – December 1, 2021 </span>
+this code confirms that the URL page belongs to a paperback. 
+Furthermore, the following aria label indicates that the URL belongs to a paperback:
+<a href="javascript:void(0)" role="radio" aria-checked="true" aria-current="page" class="a-button-text a-text-left" id="a-autoid-4-announce">      <span class="slot-title">
+                  <span aria-label="Paperback Format:">Paperback</span> <br>  </span>
+               <span class="slot-price">
+                                                 <span aria-label="$10.00" class="a-size-base a-color-price a-color-price"> $10.00 </span>        </span>
+                                 <br id="sw-slots-grid-line-break">
+
+                               </a>
+
+Compare it to the the aria label for something other than paperback: 
+<span aria-label="Kindle Format:">Kindle</span>
+
+Now let's look at how to get the cover art url. The following code contains the cover art url, https://m.media-amazon.com/images/I/71sQQGkR2TL._SY342_.jpg
+ <img alt="Eggplant" src="https://m.media-amazon.com/images/I/41jVwrSCD1L._SY445_SX342_.jpg" data-old-hires="https://m.media-amazon.com/images/I/71sQQGkR2TL._SL1500_.jpg" onload="markFeatureRenderForImageBlock(); this.onload='';setCSMReq('af');if(typeof addlongPoleTag === 'function'){ addlongPoleTag('af','desktop-image-atf-marker');};setCSMReq('cf')" data-a-image-name="landingImage" class="a-dynamic-image a-stretch-vertical" id="landingImage" data-a-dynamic-image="{&quot;https://m.media-amazon.com/images/I/71sQQGkR2TL._SY342_.jpg&quot;:[342,214],&quot;https://m.media-amazon.com/images/I/71sQQGkR2TL._SY385_.jpg&quot;:[385,241],&quot;https://m.media-amazon.com/images/I/71sQQGkR2TL._SY425_.jpg&quot;:[425,266],&quot;https://m.media-amazon.com/images/I/71sQQGkR2TL._SY466_.jpg&quot;:[466,291],&quot;https://m.media-amazon.com/images/I/71sQQGkR2TL._SY522_.jpg&quot;:[522,326]}" style="max-width:326px;max-height:522px;"/> </div>
+	    </span> </span></li>       <li class="mainImageTemplate template"><span class="a-list-item"> <span class="a-declarative" data-action="main-image-click" data-main-image-click="{}" data-ux-click=""> <div class="imgTagWrapper">
+            <span class="placeHolder"></span> </div>
+			
+The cover art url will always be contained within code that looks somewhat like this.
+
+Finally, let's get the best sellers rank. The bsr can be fouond within the following code:
+ <img alt="Eggplant" src="https://m.media-amazon.com/images/I/41jVwrSCD1L._SY445_SX342_.jpg" data-old-hires="https://m.media-amazon.com/images/I/71sQQGkR2TL._SL1500_.jpg" onload="markFeatureRenderForImageBlock(); this.onload='';setCSMReq('af');if(typeof addlongPoleTag === 'function'){ addlongPoleTag('af','desktop-image-atf-marker');};setCSMReq('cf')" data-a-image-name="landingImage" class="a-dynamic-image a-stretch-vertical" id="landingImage" data-a-dynamic-image="{&quot;https://m.media-amazon.com/images/I/71sQQGkR2TL._SY342_.jpg&quot;:[342,214],&quot;https://m.media-amazon.com/images/I/71sQQGkR2TL._SY385_.jpg&quot;:[385,241],&quot;https://m.media-amazon.com/images/I/71sQQGkR2TL._SY425_.jpg&quot;:[425,266],&quot;https://m.media-amazon.com/images/I/71sQQGkR2TL._SY466_.jpg&quot;:[466,291],&quot;https://m.media-amazon.com/images/I/71sQQGkR2TL._SY522_.jpg&quot;:[522,326]}" style="max-width:326px;max-height:522px;"/> </div>
+	    </span> </span></li>       <li class="mainImageTemplate template"><span class="a-list-item"> <span class="a-declarative" data-action="main-image-click" data-main-image-click="{}" data-ux-click=""> <div class="imgTagWrapper">
+            <span class="placeHolder"></span> </div>
+			
+The BSR is always a number sign (#) followed by a number, followed by 'in Books', and can always be found in the Product Details section of the page.
+
+
+This is a comprehensive guide for one example of how to properly scrape metadata from urls. 
+
+I will prepare another example while you consider this.

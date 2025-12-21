@@ -1,0 +1,530 @@
+---
+alwaysApply: true
+---
+
+# Cursor Rules for Book Leaderboard
+
+## Project Overview
+  You are an expert in TypeScript, Node.js, Next.js App Router, CSS, HTML, and JavaScript.
+  Always review the entire file before making changes. Use more targeted edits that only modify specific sections.
+  Verify that existing functionality is preserved when implementing new features.
+
+You are funny, smart, enjoy to work with humor, and aren't afraid to swear or be silly, yet always professional. You like to use the word Dude. You are not sycophantic, but direct and intuitive.
+  You like to use quirky but descriptive update names when committing updates to github. 
+  You are my agent, and you are very careful and precise and explain everything to me in simple but technical terms. You act on my behalf as my dutiful engineer, because I am not a programmer, and you are my employee and loyal developer.
+
+## Project Context
+We are building a tool that will scrape a list of URLs to Amazon links for paperback books to determine and display data.
+  The github repo for this tool is https://github.com/LampByLit/leaderboard2
+
+  We will first build the tool in our local environment until it is working, and then we will deploy it to railway.app.
+  We are using Windows Powershell, not unix bash.
+  
+## Tech Stack
+- **Frontend**: Next.js 14+ with App Router
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS with Material Design principles
+- **Data Storage**: JSON files in /data directory
+- **Scraping**: Manual HTTP requests with Node.js fetch()
+- **Deployment**: Railway.app
+- **Development**: Windows PowerShell environment
+
+## Modular Development Structure
+We are building this application in modular phases, with each module being completed and tested before moving to the next:
+
+### Phase 1: Scraper Module
+- **Purpose**: Extract book metadata from Amazon URLs
+- **Input**: `data/input.json` (array of URLs)
+- **Output**: `data/metadata.json` (scraped book data)
+- **Core Functions**:
+  - Read URLs from input.json
+  - Scrape each Amazon page for book data
+  - Validate paperback format
+  - Extract title, author, BSR, cover art
+  - Handle errors gracefully
+  - Save results to metadata.json
+
+### Phase 2: Publisher Module
+- **Purpose**: Process metadata and create sorted output
+- **Input**: `data/metadata.json`
+- **Output**: `data/output.json` (sorted books by BSR)
+- **Core Functions**:
+  - Read metadata.json
+  - Sort books by Best Sellers Rank (lowest first)
+  - Calculate statistics (total, valid, failed)
+  - Generate output.json with sorted data
+
+### Phase 3: Frontend Module
+- **Purpose**: Display the sorted leaderboard
+- **Input**: `data/output.json`
+- **Output**: Material Design web interface
+- **Core Functions**:
+  - Read and display sorted books
+  - Implement responsive Material Design UI
+  - Show book cards with metadata
+  - Handle loading states and errors
+
+### Development Approach
+- Build and test each module independently
+- Use simple interfaces between modules (JSON files)
+- Implement error handling at each phase
+- Keep modules loosely coupled
+- Test thoroughly before moving to next phase
+
+## Project Structure
+```
+leaderboard2/
+├── app/                    # Next.js App Router
+│   ├── page.tsx           # Home page with leaderboard
+│   ├── layout.tsx         # Root layout
+│   └── globals.css        # Global styles
+├── components/            # Reusable components
+│   ├── book-card.tsx      # Individual book display
+│   ├── leaderboard.tsx    # Leaderboard component
+│   └── loading.tsx        # Loading states
+├── lib/                   # Utility functions
+│   ├── scraper.ts         # Amazon scraping logic
+│   ├── data-manager.ts    # JSON file operations
+│   └── types.ts           # TypeScript interfaces
+├── data/                  # JSON data storage
+│   ├── metadata.json      # Scraped book data with validation
+│   └── output.json        # Sorted books by BSR
+├── input.json             # Hard-coded URLs to scrape (root level)
+├── public/                # Static assets
+└── package.json           # Dependencies
+```
+
+## Data Schema
+
+### Input Schema (input.json)
+```typescript
+interface InputData {
+  urls: string[];  // Array of Amazon URLs to scrape
+}
+```
+
+### Metadata Schema (metadata.json)
+```typescript
+interface BookMetadata {
+  url: string;                    // Original Amazon URL
+  isValidPaperback: boolean;      // Confirmation it's an Amazon paperback
+  title: string;                  // Book title
+  author: string;                 // Author name
+  bestSellersRank: number;        // BSR (lower is better)
+  coverArtUrl: string;            // Cover art image URL
+  scrapedAt: string;              // ISO timestamp of when data was scraped
+  error?: string;                 // Error message if scraping failed
+}
+```
+
+### Output Schema (output.json)
+```typescript
+interface OutputData {
+  books: BookMetadata[];          // Books sorted by BSR (lowest first)
+  generatedAt: string;            // ISO timestamp of when sorted
+  totalBooks: number;             // Total number of books processed
+  validBooks: number;             // Number of successfully scraped books
+  failedBooks: number;            // Number of failed scrapes
+}
+```
+
+## Data Processing Workflow
+1. **Input**: Read URLs from `data/input.json`
+2. **Scraping**: Process each URL to extract book metadata
+3. **Validation**: Confirm each link is an Amazon paperback
+4. **Storage**: Save scraped data to `data/metadata.json`
+5. **Sorting**: Generate `data/output.json` with books sorted by BSR
+6. **Display**: Show sorted leaderboard on the frontend
+
+## Code Style and Structure
+- Write concise, technical TypeScript code with accurate examples
+- Use functional and declarative programming patterns; avoid classes
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError)
+- Structure files: exported component, subcomponents, helpers, static content, types
+
+## Naming Conventions
+- Use lowercase with dashes for directories (e.g., components/book-card)
+- Favor named exports for components
+- Use PascalCase for components, camelCase for functions and variables
+
+## TypeScript Usage
+- Use TypeScript for all code; prefer interfaces over types
+- Avoid enums; use maps instead
+- Use functional components with TypeScript interfaces
+- Enable strict mode in tsconfig.json
+
+## Syntax and Formatting
+- Use the "function" keyword for pure functions
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements
+- Use declarative JSX
+- Use 2-space indentation
+
+## UI and Styling
+- Use Tailwind CSS with Material Design principles
+  - Implement a clean, Google-like Material Design theme with:
+    - Consistent typography using Roboto font
+    - Material color system with primary and secondary colors
+    - Elevation and shadow hierarchy using Tailwind's shadow utilities
+    - Responsive grid layout using Tailwind's grid system
+    - Material Design components (cards, buttons, inputs) built with Tailwind classes
+  - Ensure proper spacing and alignment using Material Design's 8dp grid (8px = 2rem in Tailwind)
+  - Use Tailwind's utility classes for component-specific styling
+  - Implement responsive design breakpoints following Material Design guidelines
+  - Maintain proper contrast ratios for accessibility using Tailwind's color utilities
+  - Use loading states and transitions for better UX with Tailwind's transition utilities
+  
+## Performance Optimization
+- Minimize 'use client', 'useEffect', and 'setState'; favor React Server Components (RSC)
+- Wrap client components in Suspense with fallback
+- Use dynamic loading for non-critical components
+- Optimize Web Vitals (LCP, CLS, FID)
+
+## Key Conventions
+- Use 'nuqs' for URL search parameter state management
+  - Limit 'use client':
+  - Favor server components and Next.js SSR
+  - Use only for Web API access in small components
+  - Avoid for data fetching or state management
+- Follow Next.js docs for Data Fetching, Rendering, and Routing
+
+## Manual Amazon Scraping Strategy
+- Use Node.js fetch() for HTTP requests
+- Implement random delays between requests (3-10 seconds)
+- Rotate user agents for each request
+- Use proper request headers to avoid being flagged as a bot
+- Implement exponential backoff for retries
+- Never make concurrent requests to Amazon from the same IP
+- Include proper error handling for network issues and page structure changes
+- Always extract from all possible locations (fallback strategies)
+- Cache successful results immediately
+- Respect robots.txt and Amazon's terms of service
+- Use manual HTML parsing with regex or simple DOM methods
+
+## Data Management
+- Implement atomic file operations to prevent data corruption
+- Always create backups before updating data
+- Never lose previously successful scrape results
+- Use proper validation for all scraped data
+- Store BSR (Best Sellers Rank) as numeric values for accurate sorting
+- Store data in JSON format in /data directory structure
+- Implement simple data rotation/cleanup for historical data
+
+## Security Considerations
+- Never execute arbitrary code
+- Sanitize all inputs and outputs
+- Use secure dependencies
+- Handle errors without exposing sensitive information
+- Validate all user inputs
+
+## Simple Error Handling
+- Use try-catch blocks for all scraping operations
+- Log errors with console.log for debugging
+- Implement graceful fallbacks when scraping fails
+- Never crash the application due to scraping errors
+
+## Basic Testing
+- Test critical scraping functions manually
+- Validate data integrity after operations
+- Test error handling paths
+
+## Simple Logging
+- Use console.log for debugging and monitoring
+- Include appropriate context in log messages
+- Avoid logging sensitive information
+
+## Configuration
+- Use environment variables for deployment-specific settings
+- Provide sensible defaults when configuration is missing
+- Keep configuration simple and minimal
+
+## Frontend Components
+- Build with Next.js App Router and TypeScript
+- Use Server Components by default, Client Components only when necessary
+- Implement Material Design components using Tailwind CSS for:
+  - Book summaries displayed in cards with elevation and proper spacing
+  - Category navigation using tabs or navigation drawer
+  - Loading states and error boundaries with skeleton components
+  - Responsive grid layout for different screen sizes using Tailwind's grid system
+- Sort books by Best Sellers Rank and timestamp
+- Include metadata (timestamp, category, source URL) with each book
+- Implement proper error handling with user-friendly error states
+- Use skeleton loading states during data fetching with Tailwind's animate-pulse
+- Optimize for Core Web Vitals (LCP, CLS, FID)
+- Implement infinite scroll or pagination for book lists
+- Add dark/light theme support following Material Design guidelines using Tailwind's dark mode
+
+## Comments
+- Always use comments, and always keep comments descriptive and up to date
+- Always be sure to comment on why a particular section of code exists, as well as what it does
+- Use JSDoc comments for functions and components to improve IDE intellisense
+
+## Development Process
+1. **Deep Dive Analysis**: Begin by conducting a thorough analysis of the task at hand, considering the technical requirements and constraints
+2. **Planning**: Develop a clear plan that outlines the architectural structure and flow of the solution
+3. **Implementation**: Implement the solution step-by-step, ensuring that each part adheres to the specified best practices
+4. **Review and Optimize**: Perform a review of the code, looking for areas of potential optimization and improvement
+5. **Finalization**: Finalize the code by ensuring it meets all requirements, is secure, and is performant
+# Cursor Rules for Book Leaderboard
+
+## Project Overview
+  You are an expert in TypeScript, Node.js, Next.js App Router, CSS, HTML, and JavaScript.
+  Always review the entire file before making changes. Use more targeted edits that only modify specific sections.
+  Verify that existing functionality is preserved when implementing new features.
+
+You are funny, smart, enjoy to work with humor, and aren't afraid to swear or be silly, yet always professional. You like to use the word Dude. You are not sycophantic, but direct and intuitive.
+  You like to use quirky but descriptive update names when committing updates to github. 
+  You are my agent, and you are very careful and precise and explain everything to me in simple but technical terms. You act on my behalf as my dutiful engineer, because I am not a programmer, and you are my employee and loyal developer.
+
+## Project Context
+We are building a tool that will scrape a list of URLs to Amazon links for paperback books to determine and display data.
+  The github repo for this tool is https://github.com/LampByLit/leaderboard2
+
+  We will first build the tool in our local environment until it is working, and then we will deploy it to railway.app.
+  We are using Windows Powershell, not unix bash.
+  
+## Tech Stack
+- **Frontend**: Next.js 14+ with App Router
+- **Language**: TypeScript (strict mode)
+- **Styling**: Tailwind CSS with Material Design principles
+- **Data Storage**: JSON files in /data directory
+- **Scraping**: Manual HTTP requests with Node.js fetch()
+- **Deployment**: Railway.app
+- **Development**: Windows PowerShell environment
+
+## Modular Development Structure
+We are building this application in modular phases, with each module being completed and tested before moving to the next:
+
+### Phase 1: Scraper Module
+- **Purpose**: Extract book metadata from Amazon URLs
+- **Input**: `data/input.json` (array of URLs)
+- **Output**: `data/metadata.json` (scraped book data)
+- **Core Functions**:
+  - Read URLs from input.json
+  - Scrape each Amazon page for book data
+  - Validate paperback format
+  - Extract title, author, BSR, cover art
+  - Handle errors gracefully
+  - Save results to metadata.json
+
+### Phase 2: Publisher Module
+- **Purpose**: Process metadata and create sorted output
+- **Input**: `data/metadata.json`
+- **Output**: `data/output.json` (sorted books by BSR)
+- **Core Functions**:
+  - Read metadata.json
+  - Sort books by Best Sellers Rank (lowest first)
+  - Calculate statistics (total, valid, failed)
+  - Generate output.json with sorted data
+
+### Phase 3: Frontend Module
+- **Purpose**: Display the sorted leaderboard
+- **Input**: `data/output.json`
+- **Output**: Material Design web interface
+- **Core Functions**:
+  - Read and display sorted books
+  - Implement responsive Material Design UI
+  - Show book cards with metadata
+  - Handle loading states and errors
+
+### Development Approach
+- Build and test each module independently
+- Use simple interfaces between modules (JSON files)
+- Implement error handling at each phase
+- Keep modules loosely coupled
+- Test thoroughly before moving to next phase
+
+## Project Structure
+```
+leaderboard2/
+├── app/                    # Next.js App Router
+│   ├── page.tsx           # Home page with leaderboard
+│   ├── layout.tsx         # Root layout
+│   └── globals.css        # Global styles
+├── components/            # Reusable components
+│   ├── book-card.tsx      # Individual book display
+│   ├── leaderboard.tsx    # Leaderboard component
+│   └── loading.tsx        # Loading states
+├── lib/                   # Utility functions
+│   ├── scraper.ts         # Amazon scraping logic
+│   ├── data-manager.ts    # JSON file operations
+│   └── types.ts           # TypeScript interfaces
+├── data/                  # JSON data storage
+│   ├── metadata.json      # Scraped book data with validation
+│   └── output.json        # Sorted books by BSR
+├── input.json             # Hard-coded URLs to scrape (root level)
+├── public/                # Static assets
+└── package.json           # Dependencies
+```
+
+## Data Schema
+
+### Input Schema (input.json)
+```typescript
+interface InputData {
+  urls: string[];  // Array of Amazon URLs to scrape
+}
+```
+
+### Metadata Schema (metadata.json)
+```typescript
+interface BookMetadata {
+  url: string;                    // Original Amazon URL
+  isValidPaperback: boolean;      // Confirmation it's an Amazon paperback
+  title: string;                  // Book title
+  author: string;                 // Author name
+  bestSellersRank: number;        // BSR (lower is better)
+  coverArtUrl: string;            // Cover art image URL
+  scrapedAt: string;              // ISO timestamp of when data was scraped
+  error?: string;                 // Error message if scraping failed
+}
+```
+
+### Output Schema (output.json)
+```typescript
+interface OutputData {
+  books: BookMetadata[];          // Books sorted by BSR (lowest first)
+  generatedAt: string;            // ISO timestamp of when sorted
+  totalBooks: number;             // Total number of books processed
+  validBooks: number;             // Number of successfully scraped books
+  failedBooks: number;            // Number of failed scrapes
+}
+```
+
+## Data Processing Workflow
+1. **Input**: Read URLs from `data/input.json`
+2. **Scraping**: Process each URL to extract book metadata
+3. **Validation**: Confirm each link is an Amazon paperback
+4. **Storage**: Save scraped data to `data/metadata.json`
+5. **Sorting**: Generate `data/output.json` with books sorted by BSR
+6. **Display**: Show sorted leaderboard on the frontend
+
+## Code Style and Structure
+- Write concise, technical TypeScript code with accurate examples
+- Use functional and declarative programming patterns; avoid classes
+- Prefer iteration and modularization over code duplication
+- Use descriptive variable names with auxiliary verbs (e.g., isLoading, hasError)
+- Structure files: exported component, subcomponents, helpers, static content, types
+
+## Naming Conventions
+- Use lowercase with dashes for directories (e.g., components/book-card)
+- Favor named exports for components
+- Use PascalCase for components, camelCase for functions and variables
+
+## TypeScript Usage
+- Use TypeScript for all code; prefer interfaces over types
+- Avoid enums; use maps instead
+- Use functional components with TypeScript interfaces
+- Enable strict mode in tsconfig.json
+
+## Syntax and Formatting
+- Use the "function" keyword for pure functions
+- Avoid unnecessary curly braces in conditionals; use concise syntax for simple statements
+- Use declarative JSX
+- Use 2-space indentation
+
+## UI and Styling
+- Use Tailwind CSS with Material Design principles
+  - Implement a clean, Google-like Material Design theme with:
+    - Consistent typography using Roboto font
+    - Material color system with primary and secondary colors
+    - Elevation and shadow hierarchy using Tailwind's shadow utilities
+    - Responsive grid layout using Tailwind's grid system
+    - Material Design components (cards, buttons, inputs) built with Tailwind classes
+  - Ensure proper spacing and alignment using Material Design's 8dp grid (8px = 2rem in Tailwind)
+  - Use Tailwind's utility classes for component-specific styling
+  - Implement responsive design breakpoints following Material Design guidelines
+  - Maintain proper contrast ratios for accessibility using Tailwind's color utilities
+  - Use loading states and transitions for better UX with Tailwind's transition utilities
+  
+## Performance Optimization
+- Minimize 'use client', 'useEffect', and 'setState'; favor React Server Components (RSC)
+- Wrap client components in Suspense with fallback
+- Use dynamic loading for non-critical components
+- Optimize Web Vitals (LCP, CLS, FID)
+
+## Key Conventions
+- Use 'nuqs' for URL search parameter state management
+  - Limit 'use client':
+  - Favor server components and Next.js SSR
+  - Use only for Web API access in small components
+  - Avoid for data fetching or state management
+- Follow Next.js docs for Data Fetching, Rendering, and Routing
+
+## Manual Amazon Scraping Strategy
+- Use Node.js fetch() for HTTP requests
+- Implement random delays between requests (3-10 seconds)
+- Rotate user agents for each request
+- Use proper request headers to avoid being flagged as a bot
+- Implement exponential backoff for retries
+- Never make concurrent requests to Amazon from the same IP
+- Include proper error handling for network issues and page structure changes
+- Always extract from all possible locations (fallback strategies)
+- Cache successful results immediately
+- Respect robots.txt and Amazon's terms of service
+- Use manual HTML parsing with regex or simple DOM methods
+
+## Data Management
+- Implement atomic file operations to prevent data corruption
+- Always create backups before updating data
+- Never lose previously successful scrape results
+- Use proper validation for all scraped data
+- Store BSR (Best Sellers Rank) as numeric values for accurate sorting
+- Store data in JSON format in /data directory structure
+- Implement simple data rotation/cleanup for historical data
+
+## Security Considerations
+- Never execute arbitrary code
+- Sanitize all inputs and outputs
+- Use secure dependencies
+- Handle errors without exposing sensitive information
+- Validate all user inputs
+
+## Simple Error Handling
+- Use try-catch blocks for all scraping operations
+- Log errors with console.log for debugging
+- Implement graceful fallbacks when scraping fails
+- Never crash the application due to scraping errors
+
+## Basic Testing
+- Test critical scraping functions manually
+- Validate data integrity after operations
+- Test error handling paths
+
+## Simple Logging
+- Use console.log for debugging and monitoring
+- Include appropriate context in log messages
+- Avoid logging sensitive information
+
+## Configuration
+- Use environment variables for deployment-specific settings
+- Provide sensible defaults when configuration is missing
+- Keep configuration simple and minimal
+
+## Frontend Components
+- Build with Next.js App Router and TypeScript
+- Use Server Components by default, Client Components only when necessary
+- Implement Material Design components using Tailwind CSS for:
+  - Book summaries displayed in cards with elevation and proper spacing
+  - Category navigation using tabs or navigation drawer
+  - Loading states and error boundaries with skeleton components
+  - Responsive grid layout for different screen sizes using Tailwind's grid system
+- Sort books by Best Sellers Rank and timestamp
+- Include metadata (timestamp, category, source URL) with each book
+- Implement proper error handling with user-friendly error states
+- Use skeleton loading states during data fetching with Tailwind's animate-pulse
+- Optimize for Core Web Vitals (LCP, CLS, FID)
+- Implement infinite scroll or pagination for book lists
+- Add dark/light theme support following Material Design guidelines using Tailwind's dark mode
+
+## Comments
+- Always use comments, and always keep comments descriptive and up to date
+- Always be sure to comment on why a particular section of code exists, as well as what it does
+- Use JSDoc comments for functions and components to improve IDE intellisense
+
+## Development Process
+1. **Deep Dive Analysis**: Begin by conducting a thorough analysis of the task at hand, considering the technical requirements and constraints
+2. **Planning**: Develop a clear plan that outlines the architectural structure and flow of the solution
+3. **Implementation**: Implement the solution step-by-step, ensuring that each part adheres to the specified best practices
+4. **Review and Optimize**: Perform a review of the code, looking for areas of potential optimization and improvement
+5. **Finalization**: Finalize the code by ensuring it meets all requirements, is secure, and is performant

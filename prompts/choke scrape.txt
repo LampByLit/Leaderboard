@@ -1,0 +1,45 @@
+Here is the first example of an amazon url (similar to one the scraper might find in the input file): https://www.amazon.com/Choke-Chuck-Palahniuk/dp/0385720920
+We will be examining the page source of this url: 
+
+now i will show you how to find the following important metadata by scraping the page source, without ever having to render the page visually, use any scraper frameworks, or overload amazon's servers:
+- title
+- author
+- paperback
+- cover art url
+- bsr
+
+remember that after all of this metadata is scraped, it should be saved in the metadata json file, in proper format. 
+
+First let's examine how to find the title. 
+When we open this URL, we immediately see that both the book title and the author name are in the title of the page.
+
+In the following code, we find the book's title:
+<span id="productTitle" class="a-size-large celwidget" data-csa-c-id="pl6lhb-iayyem-sd8f0p-3shcno" data-cel-widget="productTitle">  Choke </span>
+Notice how it is accompanied by 'productTitle'? this is an important association.
+Let's always ignore parts of a title that are in brackets or parentheses, or that come after colons or semicolons. In this case, the name of this book is Choke.
+
+Now let's find the book's author. In the following code, we see the book's author:
+<a class="a-link-normal" href="/Chuck-Palahniuk/e/B000APV8ME/ref=dp_byline_cont_book_1">Chuck Palahniuk</a>
+Very closely in the code, we have this:
+<span class="a-color-secondary">(Author)</span>
+Notice the use of '(Author)' in proximity to the correct author name. 
+
+Now let's confirm whether or not this link is for a paperback. The following code can be found between the Title and the author:
+<span id="productSubtitle" class="a-size-medium a-color-secondary celwidget" data-csa-c-id="wtbyrp-w6yz1d-le59cu-qeoqb9" data-cel-widget="productSubtitle">  Paperback – Print, June 11, 2002 </span>
+this code confirms that the URL page belongs to a paperback. 
+
+Now let's look at how to get the cover art url. The following code contains the cover art url https://m.media-amazon.com/images/I/61EhkDLsoaL._SY342_.jpg
+ <img alt="Choke" src="https://m.media-amazon.com/images/I/41KoHl3eYML._SY445_SX342_.jpg" data-old-hires="https://m.media-amazon.com/images/I/61EhkDLsoaL._SL1198_.jpg" onload="markFeatureRenderForImageBlock(); this.onload='';setCSMReq('af');if(typeof addlongPoleTag === 'function'){ addlongPoleTag('af','desktop-image-atf-marker');};setCSMReq('cf')" data-a-image-name="landingImage" class="a-dynamic-image a-stretch-vertical" id="landingImage" data-a-dynamic-image="{&quot;https://m.media-amazon.com/images/I/61EhkDLsoaL._SY522_.jpg&quot;:[522,339],&quot;https://m.media-amazon.com/images/I/61EhkDLsoaL._SY385_.jpg&quot;:[385,250],&quot;https://m.media-amazon.com/images/I/61EhkDLsoaL._SY342_.jpg&quot;:[342,222],&quot;https://m.media-amazon.com/images/I/61EhkDLsoaL._SY425_.jpg&quot;:[425,276],&quot;https://m.media-amazon.com/images/I/61EhkDLsoaL._SY466_.jpg&quot;:[466,302]}" style="max-width:339px;max-height:522px;"/> </div>
+	    </span> </span></li>       <li class="mainImageTemplate template"><span class="a-list-item"> <span class="a-declarative" data-action="main-image-click" data-main-image-click="{}" data-ux-click=""> <div class="imgTagWrapper">
+            <span class="placeHolder"></span> </div>
+
+The cover art url will always be contained within code that looks somewhat like this.
+
+Finally, let's get the best sellers rank. The bsr can be fouond within the following code, remember that if you look at this url, you won't see the same BSR, it changes very often:
+<span class="a-list-item">      <span class="a-text-bold"> Best Sellers Rank: </span> #58,436 in Books (<a href="/gp/bestsellers/books/ref=pd_zg_ts_books">See Top 100 in Books</a>) <ul class="a-unordered-list a-nostyle a-vertical zg_hrsr">  <li><span class="a-list-item"> #498 in <a href="/gp/bestsellers/books/10129/ref=pd_zg_hrsr_books">Contemporary Literature &amp; Fiction</a></span></li>  <li><span class="a-list-item"> #688 in <a href="/gp/bestsellers/books/3558941011/ref=pd_zg_hrsr_books">Fiction Satire</a></span></li>  <li><span class="a-list-item"> #4,507 in <a href="/gp/bestsellers/books/10132/ref=pd_zg_hrsr_books">Literary Fiction (Books)</a></span></li>  </ul>    </span>			
+The BSR is always a number sign (#) followed by a number, followed by 'in Books', and can always be found in the Product Details section of the page.
+
+
+This is a comprehensive guide for one example of how to properly scrape metadata from urls. 
+
+These three examples should serve you well. 

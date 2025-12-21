@@ -1,0 +1,39 @@
+{
+  "name": "leaderboard-temp",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "scrape": "tsx scripts/scrape.ts",
+    "publish": "tsx scripts/publish.ts",
+    "cycle": "tsx lib/cycle.ts",
+    "scheduler": "tsx scripts/scheduler.ts",
+    "cycle:now": "tsx lib/cycle.ts",
+    "start:prod": "tsx scripts/start-production.ts",
+    "build:clean": "rm -rf .next && npm run build"
+  },
+  "dependencies": {
+    "next": "15.4.3",
+    "node-cron": "^4.2.1",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "recharts": "^3.1.2"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3",
+    "@types/node": "^20",
+    "@types/node-cron": "^3.0.11",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "autoprefixer": "^10.4.0",
+    "eslint": "^9",
+    "eslint-config-next": "15.4.3",
+    "postcss": "^8.4.0",
+    "tailwindcss": "^3.4.0",
+    "tsx": "^4.7.0",
+    "typescript": "^5"
+  }
+}
