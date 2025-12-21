@@ -207,16 +207,37 @@ function extractAuthor(html: string): string | null {
 }
 
 /**
- * Confirms if the book is a paperback by checking productSubtitle
+ * Confirms if the book is a paperback by checking multiple patterns
  */
 function isPaperback(html: string): boolean {
   try {
-    // Look for productSubtitle containing "Paperback"
-    const paperbackMatch = html.match(/<span[^>]*id="productSubtitle"[^>]*>\s*([^<]+)\s*<\/span>/);
-    if (paperbackMatch && paperbackMatch[1]) {
-      const subtitle = paperbackMatch[1].toLowerCase();
-      return subtitle.includes('paperback');
+    // Pattern 1: Look for productSubtitle containing "Paperback" (legacy method)
+    const subtitleMatch = html.match(/<span[^>]*id="productSubtitle"[^>]*>\s*([^<]+)\s*<\/span>/);
+    if (subtitleMatch && subtitleMatch[1]) {
+      const subtitle = subtitleMatch[1].toLowerCase();
+      if (subtitle.includes('paperback')) {
+        return true;
+      }
     }
+
+    // Pattern 2: Look for aria-label="Paperback Format:" (current Amazon method)
+    const ariaLabelMatch = html.match(/aria-label="Paperback Format:"/i);
+    if (ariaLabelMatch) {
+      return true;
+    }
+
+    // Pattern 3: Look for any span with "Paperback" text and aria-label
+    const spanAriaMatch = html.match(/<span[^>]*aria-label="Paperback Format:"[^>]*>Paperback<\/span>/i);
+    if (spanAriaMatch) {
+      return true;
+    }
+
+    // Pattern 4: Broad fallback - look for "Paperback" in format selection areas
+    const broadMatch = html.match(/<span[^>]*aria-label="[^"]*Paperback[^"]*"[^>]*>Paperback<\/span>/i);
+    if (broadMatch) {
+      return true;
+    }
+
     return false;
   } catch (error) {
     console.error('Error checking paperback status:', error);
