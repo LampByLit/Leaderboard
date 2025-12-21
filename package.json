@@ -16,7 +16,7 @@
     "build:clean": "rm -rf .next && npm run build"
   },
   "dependencies": {
-    "next": "15.4.3",
+    "next": "^15.5.9",
     "node-cron": "^4.2.1",
     "react": "19.1.0",
     "react-dom": "19.1.0",
