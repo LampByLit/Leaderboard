@@ -1,36 +1,52 @@
 import { BookMetadata, ScrapingResult } from './types';
+import puppeteer, { Browser, Page } from 'puppeteer';
 
 /**
  * Amazon book scraper module
- * Implements manual HTTP requests with proper rate limiting and error handling
- * Based on the scraping patterns from the prompt files
+ * Uses Puppeteer headless browser for realistic scraping that bypasses bot detection
+ * Implements proper rate limiting and error handling
  */
 
-// User agents for rotation to avoid being flagged as a bot
-const USER_AGENTS = [
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:133.0) Gecko/20100101 Firefox/133.0',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1.1 Safari/605.1.15',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36 Edg/131.0.0.0',
-  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0.0.0 Safari/537.36',
-  'Mozilla/5.0 (iPhone; CPU iPhone OS 17_2 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.2 Mobile/15E148 Safari/604.1'
-];
+// Puppeteer browser instance cache
+let browserInstance: Browser | null = null;
+
+/**
+ * Gets or creates a Puppeteer browser instance
+ */
+async function getBrowser(): Promise<Browser> {
+  if (!browserInstance) {
+    browserInstance = await puppeteer.launch({
+      headless: true,
+      args: [
+        '--no-sandbox',
+        '--disable-setuid-sandbox',
+        '--disable-dev-shm-usage',
+        '--disable-accelerated-2d-canvas',
+        '--no-first-run',
+        '--no-zygote',
+        '--single-process', // Important for Railway
+        '--disable-gpu'
+      ]
+    });
+  }
+  return browserInstance;
+}
+
+/**
+ * Closes the browser instance
+ */
+async function closeBrowser(): Promise<void> {
+  if (browserInstance) {
+    await browserInstance.close();
+    browserInstance = null;
+  }
+}
 
 /**
  * Generates a random delay between 8-15 seconds for rate limiting
  */
 function getRandomDelay(): number {
   return Math.floor(Math.random() * (15000 - 8000 + 1)) + 8000;
-}
-
-/**
- * Gets a random user agent for request rotation
- */
-function getRandomUserAgent(): string {
-  return USER_AGENTS[Math.floor(Math.random() * USER_AGENTS.length)];
 }
 
 /**
@@ -322,12 +338,12 @@ function extractBestSellersRank(html: string): number | null {
 }
 
 /**
- * Scrapes a single Amazon book URL with retry logic
+ * Scrapes a single Amazon book URL using Puppeteer headless browser
  */
 export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingResult> {
   const MAX_RETRIES = 3;
   const BASE_DELAY = 5000; // 5 seconds base delay
-  
+
   // Validate the URL first
   if (!isValidAmazonBookUrl(url)) {
     return {
@@ -335,6 +351,8 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
       error: 'Invalid Amazon book URL'
     };
   }
+
+  let page: Page | null = null;
 
   try {
     console.log(`Scraping: ${url}${retryCount > 0 ? ` (retry ${retryCount})` : ''}`);
@@ -345,65 +363,59 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
       await new Promise(resolve => setTimeout(resolve, initialDelay));
     }
 
-    // Make the HTTP request with proper headers
-    const userAgent = getRandomUserAgent();
-    const response = await fetch(url, {
-      headers: {
-        'User-Agent': userAgent,
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
-        'Accept-Language': 'en-US,en;q=0.9',
-        'Accept-Encoding': 'gzip, deflate, br',
-        'Connection': 'keep-alive',
-        'Upgrade-Insecure-Requests': '1',
-        'Sec-Fetch-Dest': 'document',
-        'Sec-Fetch-Mode': 'navigate',
-        'Sec-Fetch-Site': 'none',
-        'Sec-Fetch-User': '?1',
-        'Cache-Control': 'max-age=0',
-        'DNT': '1',
-        'Sec-Ch-Ua': userAgent.includes('Chrome') ? '"Google Chrome";v="131", "Chromium";v="131", "Not_A Brand";v="24"'
-          : userAgent.includes('Firefox') ? '"Not_A Brand";v="99"'
-          : userAgent.includes('Safari') ? '"Safari";v="17.2"'
-          : '"Not_A Brand";v="99"',
-        'Sec-Ch-Ua-Mobile': userAgent.includes('Mobile') ? '?1' : '?0',
-        'Sec-Ch-Ua-Platform': userAgent.includes('Macintosh') ? '"macOS"'
-          : userAgent.includes('iPhone') ? '"iOS"'
-          : userAgent.includes('Linux') ? '"Linux"'
-          : '"Windows"',
-        'Referer': 'https://www.amazon.com/',
-      }
+    // Get browser instance
+    const browser = await getBrowser();
+    page = await browser.newPage();
+
+    // Set realistic viewport
+    await page.setViewport({ width: 1366, height: 768 });
+
+    // Set user agent to look like a real browser
+    await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36');
+
+    // Set extra HTTP headers to look more legitimate
+    await page.setExtraHTTPHeaders({
+      'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7',
+      'Accept-Language': 'en-US,en;q=0.9',
+      'Accept-Encoding': 'gzip, deflate, br',
+      'DNT': '1',
+      'Connection': 'keep-alive',
+      'Upgrade-Insecure-Requests': '1',
     });
 
-    if (!response.ok) {
-      return {
-        success: false,
-        error: `HTTP ${response.status}: ${response.statusText}`
-      };
-    }
+    // Navigate to the page with a reasonable timeout
+    await page.goto(url, {
+      waitUntil: 'networkidle2', // Wait for network to be idle
+      timeout: 30000
+    });
 
-    const html = await response.text();
-    
+    // Wait a bit for any dynamic content to load
+    await new Promise(resolve => setTimeout(resolve, 2000));
+
+    // Get the fully rendered HTML
+    const html = await page.content();
+
     // Debug extraction for failing books and specific books we're investigating
     if (url.includes('B0BRC7Z2Q9') || url.includes('1795641495') || url.includes('195189779X') || url.includes('B0DLGLKGFB')) {
       debugExtraction(html, url);
     }
-    
+
     // Extract all metadata
     const title = extractTitle(html);
     let author = extractAuthor(html);
     const isPaperbackBook = isPaperback(html);
     const coverArtUrl = extractCoverArtUrl(html);
     const bestSellersRank = extractBestSellersRank(html);
-    
+
     // Hardcoded case for Void Sun book
     if (url.includes('B09JJFF82K')) {
       author = 'Frater Asemlen';
       console.log('🔧 Using hardcoded author "Frater Asemlen" for Void Sun book');
     }
-    
+
     // Determine if we got any useful data
     const hasAnyData = title || author || coverArtUrl || bestSellersRank !== null;
-    
+
     if (!hasAnyData) {
       // Retry logic for failed scrapes
       if (retryCount < MAX_RETRIES) {
@@ -411,16 +423,17 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
         const jitter = Math.random() * 2000; // Add up to 2 seconds of randomness
         const delay = baseDelay + jitter;
         console.log(`No data found, retrying in ${Math.round(delay)}ms...`);
+        await page?.close();
         await new Promise(resolve => setTimeout(resolve, delay));
         return scrapeBook(url, retryCount + 1);
       }
-      
+
       return {
         success: false,
         error: 'No book data found on page after retries'
       };
     }
-    
+
     // Create the book metadata object
     const bookData: BookMetadata = {
       url,
@@ -431,32 +444,38 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
       coverArtUrl: coverArtUrl || '',
       scrapedAt: new Date().toISOString()
     };
-    
+
     // If we're missing critical data, add an error
     if (!title || !author || bestSellersRank === null) {
       bookData.error = 'Missing critical book data';
     }
-    
+
     return {
       success: true,
       data: bookData
     };
-    
+
   } catch (error) {
     console.error(`Error scraping ${url}:`, error);
-    
+
     // Retry logic for network errors
     if (retryCount < MAX_RETRIES) {
       const delay = BASE_DELAY * Math.pow(2, retryCount);
       console.log(`Network error, retrying in ${delay}ms...`);
+      await page?.close();
       await new Promise(resolve => setTimeout(resolve, delay));
       return scrapeBook(url, retryCount + 1);
     }
-    
+
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error'
     };
+  } finally {
+    // Always close the page to prevent memory leaks
+    if (page) {
+      await page.close();
+    }
   }
 }
 
@@ -502,5 +521,24 @@ export async function scrapeBooks(urls: string[]): Promise<BookMetadata[]> {
   }
   
   console.log(`\nScraping complete! Processed ${urls.length} books.`);
+
+  // Close browser after batch scraping to free resources
+  await closeBrowser();
+
   return results;
-} 
+}
+
+// Cleanup browser on process exit
+process.on('exit', async () => {
+  await closeBrowser();
+});
+
+process.on('SIGINT', async () => {
+  await closeBrowser();
+  process.exit(0);
+});
+
+process.on('SIGTERM', async () => {
+  await closeBrowser();
+  process.exit(0);
+}); 
