@@ -503,7 +503,7 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
       try {
         await page.close();
       } catch (closeError) {
-        console.log('Warning: Error closing page:', closeError.message);
+        console.log('Warning: Error closing page:', closeError instanceof Error ? closeError.message : String(closeError));
       }
     }
   }
