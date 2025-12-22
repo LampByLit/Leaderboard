@@ -384,16 +384,40 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
     });
 
     // Navigate to the page with a reasonable timeout
+    console.log('Navigating to page...');
     await page.goto(url, {
-      waitUntil: 'networkidle2', // Wait for network to be idle
-      timeout: 30000
+      waitUntil: 'domcontentloaded', // Less strict than networkidle2
+      timeout: 45000
     });
 
-    // Wait a bit for any dynamic content to load
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Wait for the main content to load
+    console.log('Waiting for content...');
+    await page.waitForSelector('#productTitle', { timeout: 10000 }).catch(() => {
+      console.log('Product title not found, page might be blocked');
+    });
+
+    // Additional wait for dynamic content
+    await new Promise(resolve => setTimeout(resolve, 3000));
 
     // Get the fully rendered HTML
     const html = await page.content();
+
+    // Check if we got a CAPTCHA or error page
+    const title = await page.title();
+    console.log('Page title:', title);
+
+    if (title.toLowerCase().includes('robot') || title.toLowerCase().includes('captcha') || title.includes('Sorry')) {
+      throw new Error('Amazon served a CAPTCHA or error page');
+    }
+
+    // Basic check if we got Amazon content
+    if (html.length < 10000) {
+      console.log('Warning: HTML is very short, might be blocked');
+    }
+
+    if (!html.includes('amazon.com') && !html.includes('Amazon')) {
+      console.log('Warning: HTML does not contain Amazon branding');
+    }
 
     // Debug extraction for failing books and specific books we're investigating
     if (url.includes('B0BRC7Z2Q9') || url.includes('1795641495') || url.includes('195189779X') || url.includes('B0DLGLKGFB')) {
@@ -423,7 +447,8 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
         const jitter = Math.random() * 2000; // Add up to 2 seconds of randomness
         const delay = baseDelay + jitter;
         console.log(`No data found, retrying in ${Math.round(delay)}ms...`);
-        await page?.close();
+        // Don't close page here - let finally block handle it, but don't close on retry
+        page = null; // Prevent finally from closing
         await new Promise(resolve => setTimeout(resolve, delay));
         return scrapeBook(url, retryCount + 1);
       }
@@ -462,7 +487,8 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
     if (retryCount < MAX_RETRIES) {
       const delay = BASE_DELAY * Math.pow(2, retryCount);
       console.log(`Network error, retrying in ${delay}ms...`);
-      await page?.close();
+      // Don't close page here - let finally block handle it, but don't close on retry
+      page = null; // Prevent finally from closing
       await new Promise(resolve => setTimeout(resolve, delay));
       return scrapeBook(url, retryCount + 1);
     }
@@ -472,9 +498,13 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
       error: error instanceof Error ? error.message : 'Unknown error'
     };
   } finally {
-    // Always close the page to prevent memory leaks
-    if (page) {
-      await page.close();
+    // Always close the page to prevent memory leaks (but not when retrying)
+    if (page && !page.isClosed()) {
+      try {
+        await page.close();
+      } catch (closeError) {
+        console.log('Warning: Error closing page:', closeError.message);
+      }
     }
   }
 }
