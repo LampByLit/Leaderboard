@@ -403,10 +403,10 @@ export async function scrapeBook(url: string, retryCount = 0): Promise<ScrapingR
     const html = await page.content();
 
     // Check if we got a CAPTCHA or error page
-    const title = await page.title();
-    console.log('Page title:', title);
+    const pageTitle = await page.title();
+    console.log('Page title:', pageTitle);
 
-    if (title.toLowerCase().includes('robot') || title.toLowerCase().includes('captcha') || title.includes('Sorry')) {
+    if (pageTitle.toLowerCase().includes('robot') || pageTitle.toLowerCase().includes('captcha') || pageTitle.includes('Sorry')) {
       throw new Error('Amazon served a CAPTCHA or error page');
     }
 
