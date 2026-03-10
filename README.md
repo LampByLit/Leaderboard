@@ -78,6 +78,20 @@ npm run start:prod
 
 This starts both the Next.js app and the daily scheduler.
 
+### Railway: Chromium in the same service
+
+The scraper uses Puppeteer with **system Chromium** on Railway so you don’t need a separate browser service:
+
+- **`nixpacks.toml`** installs the `chromium` Nix package and sets `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1`.
+- At runtime the app uses `chromium` from PATH on Linux (or `PUPPETEER_EXECUTABLE_PATH` if you set it).
+
+If the build still downloads Puppeteer’s Chromium (slower, larger image), add a **build** variable in the Railway dashboard:
+
+- **Variable:** `PUPPETEER_SKIP_CHROMIUM_DOWNLOAD`
+- **Value:** `1`
+
+Then redeploy so the install step skips the bundled Chromium and uses Nix’s Chromium only.
+
 ## 📁 Project Structure
 
 ```

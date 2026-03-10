@@ -1,0 +1,7 @@
+# Chromium for Puppeteer (Railway/same-service)
+# Skip Puppeteer's bundled Chromium so we use system Chromium from Nix
+[phases.setup]
+nixPkgs = ["...", "chromium"]
+
+[variables]
+PUPPETEER_SKIP_CHROMIUM_DOWNLOAD = "1"
